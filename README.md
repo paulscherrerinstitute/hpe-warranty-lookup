@@ -8,5 +8,6 @@ Python script for looking up active warranties on HPE servers.
 * requests
 
 ## Usage
+```bash
 ./hpe-warranty-lookup.py <Serial_Number>
-
+```
