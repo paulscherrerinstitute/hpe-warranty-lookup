@@ -2,6 +2,7 @@ import sys
 import urllib.parse
 import requests
 from bs4 import BeautifulSoup
+import argparse
 
 
 def get_warranty_HTML(serial):
@@ -17,7 +18,8 @@ def get_warranty_HTML(serial):
         sys.exit(response.status_code, response.content)
 
     data = response.content
-    return data
+    return extract_warranty_info(data)
+    # return data
 
 
 def extract_warranty_info(html):
@@ -36,12 +38,12 @@ def extract_warranty_info(html):
     return active_warranties
 
 
-def main(argv):
-    if len(argv) < 2:
-        sys.exit("ERROR: A valid HPE Serial Number must be specified as an argument to this script")
-
-    warranty_html = get_warranty_HTML(argv[1])
-    print(extract_warranty_info(warranty_html))
- 
 if __name__ == "__main__":
-    main(sys.argv)
+    parser = argparse.ArgumentParser(usage="Small tool to retrieve HPE harware warranty status, using the serial number")
+    parser.add_argument("serial", type=str, help="serial number of the HPE hardware")
+    # parser.add_argument("--model", type=str, help="model number of HPE harware")
+    args = parser.parse_args()
+
+    print(get_warranty_HTML(args.serial))
+
+    # main(sys.argv)
