@@ -1,23 +1,24 @@
-#!/bin/env python
-
 import sys
-import http.client
 import urllib.parse
+import requests
 from bs4 import BeautifulSoup
 
+
 def get_warranty_HTML(serial):
-    params = urllib.parse.urlencode({'rows[0].item.serialNumber': serial})
+    params = urllib.parse.urlencode({
+        'rows[0].item.serialNumber': serial,
+        'rows[0].item.countryCode': "US"
+        })
     headers = {"Content-type": "application/x-www-form-urlencoded"}
 
-    conn = http.client.HTTPConnection("support.hpe.com")
-    conn.request("POST", "/hpsc/wc/public/find", params, headers)
-    response = conn.getresponse()
+    response = requests.post("https://support.hpe.com/hpsc/wc/public/find", params=params, headers=headers)
     
-    if response.status != 200:
-        sys.exit(response.reason)
+    if not response.ok:
+        sys.exit(response.status_code, response.content)
 
-    data = response.read()
+    data = response.content
     return data
+
 
 def extract_warranty_info(html):
     active_warranties = []
