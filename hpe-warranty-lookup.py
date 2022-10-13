@@ -133,7 +133,7 @@ def lookup_warranties(serials):
     return warranties
 
 
-if __name__ == "__main__":
+def main():
     import json
     parser = argparse.ArgumentParser(usage="Small tool to retrieve HPE harware warranty status, using the serial number")
     parser.add_argument("serial", type=str, help="serial number of the HPE hardware", nargs="+")
@@ -142,3 +142,7 @@ if __name__ == "__main__":
 
     systems = lookup_warranties(args.serial)
     print(json.dumps(systems))
+
+
+if __name__ == "__main__":
+    main()
