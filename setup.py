@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name="hpe_warranty_lookup",
-    version="0.1.0",
+    version="0.2.0",
     author="Paul Scherrer Institute",
     author_email="science-it@psi.ch",
     description=("Simple script to check HPE warranty status"),
