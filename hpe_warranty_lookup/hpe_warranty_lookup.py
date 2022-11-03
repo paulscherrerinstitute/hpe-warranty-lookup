@@ -5,6 +5,36 @@ from bs4 import BeautifulSoup
 import argparse
 from time import sleep
 import re
+from datetime import datetime
+
+
+def get_first_and_last_date(entries):
+    """Read a dictionary with multiple warranties, and pick up the earliest and latest date
+
+    Expected format for entries:
+        [{"CZXXXXXXXX": [{"service_type": "HPE Hardware Maintenance Onsite Support", "start_date": "Sep 1, 2020", "end_date": "Aug 31, 2021"}, 
+         {"service_type": "HPE Collaborative Remote Support", "start_date": "Sep 1, 2020", "end_date": "Aug 31, 2021"}]}]
+
+    Parameters
+    ----------
+    entries : dict
+        dict of lists, each entry is a system indexed by serial number
+
+    Returns
+    ----------
+    early_date, last_date: str
+    """
+    start_date = datetime.strptime("9999-12-31", "%Y-%m-%d")
+    end_date = datetime.strptime("1970-01-11", "%Y-%m-%d")
+    for entry in entries:
+        t_start = datetime.strptime(entry["start_date"], "%b %d, %Y")
+        t_end = datetime.strptime(entry["end_date"], "%b %d, %Y")
+        if t_start < start_date:
+            start_date = t_start
+        if t_end > end_date:
+            end_date = t_end
+    
+    return datetime.strftime(start_date, "%Y-%m-%d"), datetime.strftime(end_date, "%Y-%m-%d")
 
 
 def get_warranty_HTML(serials, country_code="US", product_number=None, iteration=0):
@@ -41,9 +71,6 @@ def get_warranty_HTML(serials, country_code="US", product_number=None, iteration
         sys.exit(response.status_code, response.content)
 
     data = response.content
- 
-    with open("test.html", "w") as f:
-        f.write(str(data))
     return extract_warranty_info(data, serials, iteration)
 
 
@@ -121,7 +148,7 @@ def extract_warranty_info(html, serials, iteration):
     return active_warranties
 
 
-def lookup_warranties(serials):
+def lookup_warranties(serials, verbose=False):
     """Gets warranties status from a list of serial numbers
 
     Parameters
@@ -137,23 +164,27 @@ def lookup_warranties(serials):
 
     systems = {}
     warranties = get_warranty_HTML(serials)
-    # print(warranties)
-    # for i, serial in enumerate(warranties):
-    #     systems[serial] = warranties[serial]
 
-    return warranties
-
+    if verbose:
+        return warranties
+    else:
+        output = {}
+        for serial in warranties:
+            start_date, end_date = get_first_and_last_date(warranties[serial])
+            output[serial] = [start_date, end_date]
+        return output
 
 def main():
     import json
     parser = argparse.ArgumentParser(usage="Small tool to retrieve HPE harware warranty status, using the serial number")
     parser.add_argument("serial", type=str, help="serial number of the HPE hardware", nargs="+")
+    parser.add_argument('--verbose', '-v', action="store_true", dest='verbose', default=False,
+                        required=False, help="Verbose")  
     # parser.add_argument("--model", type=str, help="model number of HPE harware")
     args = parser.parse_args()
 
-    systems = lookup_warranties(args.serial)
+    systems = lookup_warranties(args.serial, verbose=args.verbose)
     print(json.dumps(systems))
-
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,29 @@
+
+package:
+  name: hpe-warranty-checker
+  version: "{{ load_setup_py_data().version }}"
+  
+source:
+  path: ../
+
+build:
+  noarch: python
+  entry_points:
+    - hpe-warranty-lookup = hpe_warranty_lookup.hpe_warranty_lookup:main
+
+requirements:
+  build:
+    - python
+    - requests
+  run:
+    - python
+    - requests
+    - bs4
+ 
+
+about:
+  home: https://github.com/paulscherrerinstitute/hpe-warranty-lookup
+  license: GPLv3
+  summary: a simple tool to check HPE warranties
+  description: |
+    a simple tool to check HPE warranties
